@@ -1,8 +1,15 @@
+import java.awt.Color;
+import geometry.Point;
+import geometry.Rectangle;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+
+import objects.Sprite;
+import objects.Stage;
 
 import fields.Field;
 import fields.Reference;
@@ -14,8 +21,8 @@ public class ObjectReader {
 	
 	byte[] ba;
 
-	public Field info;
-	public Field stage;
+	public Object info;
+	public Stage stage;
 	
 	protected HashMap<Field, Integer> objLocs = new HashMap<Field, Integer>();
 	
@@ -31,20 +38,33 @@ public class ObjectReader {
 		}
 		in.readInt();
 		info = readObject();
-		stage = readObject();
+		stage = (Stage) readObject();
 	}
 	
-	protected Field readObject() throws IOException {
+	protected Object readObject() throws IOException {
 		Field[] objTable = readObjectTable();
 		
-		fixReferences(objTable);
 		
-		return objTable[0];
+		Object[] newTable = new Object[objTable.length];
+		
+		Object obj;
+		for (int i = 0; i < newTable.length; i++) {
+			obj = createObject(objTable[i].id, objTable[i].fields);
+			if (obj == null) {
+				newTable[i] = objTable[i];
+			} else {
+				newTable[i] = obj;
+			}
+		}
+		
+		fixReferences(objTable, newTable);
+		
+		return newTable[0];
 	}
 	
-	protected void fixReferences(Field[] objTable) {
+	protected void fixReferences(Field[] objTable, Object[] newTable) {
 		for (Field f : objTable) {
-			f.fixReferences(objTable);
+			f.fixReferences(newTable);
 		}
 	}
 	
@@ -176,5 +196,50 @@ public class ObjectReader {
 			return new Reference((in.readUnsignedByte() << 16) + (in.readUnsignedByte() << 8) + in.readUnsignedByte() - 1);
 		}
 		throw new IOException("Unknown inline class: " + id);
+	}
+	
+	public Object createObject(int id, Object[] fields) throws IOException {
+		switch (id) {
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+		case 14:
+			return fields[0];
+		case 20:
+		case 21:
+		case 22:
+		case 23:
+		case 24:
+		case 25:
+			return fields;
+		case 30:
+			return new Color((Integer) fields[0], (Integer) fields[1], (Integer) fields[2]);
+		case 31:
+			return new Color((Integer) fields[0], (Integer) fields[1], (Integer) fields[2], (Integer) fields[3]);
+		case 32:
+			return new Point(getDouble(fields[0]), getDouble(fields[1]));
+		case 33:
+			double x = getDouble(fields[0]);
+			double y = getDouble(fields[1]);
+			return new Rectangle(x, y, getDouble(fields[2]) - x, getDouble(fields[3]) - y);
+		case 34:
+		case 35:
+			return null;
+		case 124:
+			return new Sprite();
+		case 125:
+			return new Stage();
+		default:
+			return null;
+		}
+	}
+	
+	public double getDouble(Object object) throws IOException {
+		if (object instanceof Number) {
+			return ((Number) (object)).doubleValue();
+		}
+		throw new IOException("Not a number.");
 	}
 }

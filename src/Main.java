@@ -3,6 +3,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import objects.Stage;
+
 import fields.Field;
 
 public class Main {
@@ -21,6 +23,8 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		Field f = reader.stage;
+		Stage stage = reader.stage;
+		
+		System.out.println(stage);
 	}
 }

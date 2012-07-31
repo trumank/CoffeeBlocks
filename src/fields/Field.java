@@ -9,12 +9,16 @@ public class Field {
 		fields = f;
 	}
 
-	public void fixReferences(Field[] objTable) {
+	public void fixReferences(Object[] newTable) {
 		for (int i = 0; i < fields.length; i++) {
 			Object f = fields[i];
 			if (f instanceof Reference) {
-				fields[i] = objTable[((Reference) f).ref];
+				fields[i] = newTable[((Reference) f).ref];
 			}
 		}
+	}
+	
+	public void init() {
+		
 	}
 }
