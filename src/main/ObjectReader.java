@@ -1,3 +1,4 @@
+package main;
 import java.awt.Color;
 import geometry.Point;
 import geometry.Rectangle;
@@ -10,8 +11,10 @@ import java.util.HashMap;
 
 import objects.Sprite;
 import objects.Stage;
+import objects.media.Costume;
 
 import fields.Field;
+import fields.ISerializable;
 import fields.Reference;
 import fields.UserField;
 
@@ -58,6 +61,13 @@ public class ObjectReader {
 		}
 		
 		fixReferences(objTable, newTable);
+		
+		for (int i = newTable.length - 1; i >= 0; i--) {
+			obj = newTable[i];
+			if (obj instanceof ISerializable) {
+				((ISerializable) obj).initFromFields(objTable[i].fields);
+			}
+		}
 		
 		return newTable[0];
 	}
@@ -231,6 +241,8 @@ public class ObjectReader {
 			return new Sprite();
 		case 125:
 			return new Stage();
+		case 162:
+			return new Costume();
 		default:
 			return null;
 		}

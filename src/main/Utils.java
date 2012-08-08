@@ -1,3 +1,4 @@
+package main;
 import javax.sound.sampled.AudioSystem;
 
 
