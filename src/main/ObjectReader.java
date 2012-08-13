@@ -69,6 +69,13 @@ public class ObjectReader {
 			}
 		}
 		
+		for (int i = newTable.length - 1; i >= 0; i--) {
+			obj = newTable[i];
+			if (obj instanceof ISerializable) {
+				((ISerializable) obj).init();
+			}
+		}
+		
 		return newTable[0];
 	}
 	

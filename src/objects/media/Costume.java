@@ -69,6 +69,11 @@ public class Costume implements ISerializable {
 			System.err.println("Could not get texture ID.");
 		}
 	}
+
+	@Override
+	public void init() {
+		
+	}
 	
 	private int get2Fold(int fold) {
 		int ret = 2;

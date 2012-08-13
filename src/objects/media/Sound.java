@@ -13,4 +13,9 @@ public class Sound implements ISerializable {
 	public void initFromFields(Object[] fields) {
 		
 	}
+
+	@Override
+	public void init() {
+		
+	}
 }

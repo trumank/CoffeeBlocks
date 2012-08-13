@@ -1,4 +1,4 @@
-varying vec4 vertColor;
+out vec4 vertColor;
 
 uniform mat3 transformation;
 

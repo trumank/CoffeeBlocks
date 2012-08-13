@@ -18,7 +18,9 @@ public class Scriptable implements ISerializable, IDrawable {
 	protected Costume[] costumes;
 	private Sound[] sounds;
 	protected int costumeIndex;
-	private String name;
+	protected String name;
+	private Thread[] threads;
+	protected Stage stage;
 	
 	public Scriptable() {
 		
@@ -26,7 +28,7 @@ public class Scriptable implements ISerializable, IDrawable {
 
 	@Override
 	public void initFromFields(Object[] fields) {
-		name = (String) fields[5];
+		name = (String) fields[6];
 		ArrayList<Costume> c = new ArrayList<Costume>();
 		ArrayList<Sound> s = new ArrayList<Sound>();
 		Object[] media = (Object[]) fields[10];
@@ -42,10 +44,39 @@ public class Scriptable implements ISerializable, IDrawable {
 		sounds = s.toArray(new Sound[0]);
 		
 		costumeIndex = Arrays.asList(costumes).indexOf(fields[11]);
+		
+		Object[] scripts = (Object[]) fields[8];
+		
+		ArrayList<Object> hats = new ArrayList<Object>();
+		hats.add("EventHatMorph");
+		hats.add("KeyEventHatMorph");
+		hats.add("MouseClickEventHatMorph");
+		
+		ArrayList<Thread> list = new ArrayList<Thread>();
+		
+		for (int i = 0; i < scripts.length; i++) {
+			Object[] script = (Object[]) ((Object[]) scripts[i])[1];
+			if (hats.indexOf(((Object[]) script[0])[0]) != -1) {
+				Thread thread = new Thread(this, (Object[]) script);
+				list.add(thread);
+				//if (script[]) {
+				thread.start();
+				//}
+			}
+		}
+		
+		threads = list.toArray(new Thread[0]);
+	}
+
+	@Override
+	public void init() {
+		
 	}
 	
 	public void step() {
-		draw();
+		for (int i = 0; i < threads.length; i++) {
+			threads[i].step();
+		}
 	}
 	
 	public void draw() {
@@ -54,6 +85,8 @@ public class Scriptable implements ISerializable, IDrawable {
 	
 	protected void drawTexture() {
 		glUseProgram(Main.shaderProgram);
+		
+		glUniform1i(Main.shaderType, 1);
 		
 		Transformation.applyUniforms();
 		
@@ -72,5 +105,40 @@ public class Scriptable implements ISerializable, IDrawable {
     		1.0f, 1.0f,
     		1.0f, 0.0f
         });
+	}
+
+	
+	public void evalCommand(String selector, Object[] args) {
+		if (selector.equals("say:")) {
+			System.out.println(args[0]);
+			return;
+		}
+		System.out.println("Unknown command: " + selector);
+	}
+	
+	public Object evalArg(String selector, Object[] args) {
+		
+		// OPERATORS //////////////////
+		
+		if (selector.equals("+")) {
+			return Util.castDouble(args[0]) + Util.castDouble(args[1]);
+		} else if (selector.equals("-")) {
+			return Util.castDouble(args[0]) - Util.castDouble(args[1]);
+		} else if (selector.equals("*")) {
+			return Util.castDouble(args[0]) * Util.castDouble(args[1]);
+		} else if (selector.equals("/")) {
+			return Util.castDouble(args[0]) / Util.castDouble(args[1]);
+		} else if (selector.equals("randomFrom:to:")) {
+			double a = Util.castDouble(args[0]);
+			double b = Util.castDouble(args[1]);
+			
+			if (Math.floor(a) == a && Math.floor(b) == b) {
+				return Util.random.nextDouble() * (b - a) + a;
+			} else {
+				return Math.floor(Util.random.nextDouble() * (b + 1 - a)) + a;
+			}
+		}
+		System.out.println("Unknown arg: " + selector);
+		return null;
 	}
 }
